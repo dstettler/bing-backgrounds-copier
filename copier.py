@@ -78,11 +78,11 @@ print('\nLock screen operations completed.')
 binglocation = os.getenv('localappdata') + '\\Microsoft\\BingWallpaperApp\\WPImages'
 bingPresent = os.path.isdir(binglocation)
 # Make sure bing desktop is actually present before copying files
+j = 0
 if bingPresent:
         deskCurrent = os.listdir(location + '\\Desktop')
         bingfiles = os.listdir(binglocation)
 
-        j = 0
         for f in bingfiles:
                 # Don't copy unnecessary and already present files
                 if (f == 'WPPrefs.bin'):
