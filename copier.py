@@ -15,7 +15,7 @@ def genericCopy(src: pathlib.Path, target: pathlib.Path, title: str) -> int:
         files_copied = 0
         if dir_present:
                 for f in src.iterdir():
-                        if ''.join(f.suffixes) not in WHITELISTED_FILETYPES:
+                        if ''.join(f.suffixes).upper() not in WHITELISTED_FILETYPES:
                                 continue
 
                         shutil.copy(f.absolute(), os.path.join(target.absolute(), f.name))
