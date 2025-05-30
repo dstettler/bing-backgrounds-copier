@@ -11,9 +11,8 @@ OLD_BING = '\\Microsoft\\BingWallpaperApp\\WPImages'
 NEW_BING = '\\Packages\\Microsoft.BingWallpaper_8wekyb3d8bbwe\\LocalState\\images\\Bing'
 
 def genericCopy(src: pathlib.Path, target: pathlib.Path, title: str) -> int:
-        dir_present = os.path.isdir(old_bing_bgs_location)
         files_copied = 0
-        if dir_present:
+        if src.exists():
                 for f in src.iterdir():
                         if ''.join(f.suffixes).upper() not in WHITELISTED_FILETYPES:
                                 continue
