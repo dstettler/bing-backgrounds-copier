@@ -19,6 +19,7 @@ def genericCopy(src: pathlib.Path, target: pathlib.Path, title: str) -> int:
 
                         shutil.copy(f.absolute(), os.path.join(target.absolute(), f.name))
                         files_copied += 1
+                print(f'{title} operations completed.')
         else:
                 print(f'{title} path not present. Skipping.')
 
@@ -68,7 +69,7 @@ if __name__ == "__main__":
                         shutil.copy(f.absolute(), os.path.join(cwd_lockpath.absolute(), f.stem + ".jpg" ))
                         files_copied += 1
 
-                print('\nLock screen operations completed.')
+                print('Lock screen operations completed.')
         else:
                 print('Lock screen path not present. Skipping.')
 
