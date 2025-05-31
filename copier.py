@@ -1,105 +1,79 @@
+import datetime
 import os
+import pathlib
 import shutil
 
-# Get locations of current directory and the lockscreen images
-location = os.getcwd()
-bgslocation = os.getenv('LocalAppData') + '\\Packages\\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\\LocalState\\Assets'
+# Constants. Sizes measured in bytes.
+WHITELISTED_FILETYPES = ['.JPG', '.PNG', '.BMP', '.WEBP']
+MIN_LOCK_BG_SIZE = 100000
+LOCK_BGS = '\\Packages\\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\\LocalState\\Assets'
+OLD_BING = '\\Microsoft\\BingWallpaperApp\\WPImages'
+NEW_BING = '\\Packages\\Microsoft.BingWallpaper_8wekyb3d8bbwe\\LocalState\\images\\Bing'
 
-# Create dirs if not already present
-if not (os.path.isdir('Lockscreen')):
-        os.mkdir('Lockscreen')
+def genericCopy(src: pathlib.Path, target: pathlib.Path, title: str) -> int:
+        files_copied = 0
+        if src.exists():
+                for f in src.iterdir():
+                        if f.suffix.upper() not in WHITELISTED_FILETYPES:
+                                continue
 
-if not (os.path.isdir('Desktop')):
-        os.mkdir('Desktop')
+                        shutil.copy(f.absolute(), os.path.join(target.absolute(), f.name))
+                        files_copied += 1
+                print(f'{title} operations completed.')
+        else:
+                print(f'{title} path not present. Skipping.')
 
-# Get images already present and the files in the lockscreen directory
-bgs = os.listdir(bgslocation)
-alreadyHereLock = os.listdir(location + '\\Lockscreen')
+        return files_copied
 
-print('Copying new files...\n')
-subtracted = 0
-for bg in bgs:
+if __name__ == "__main__":
+        # Set path vars
+        lock_bgs_location = os.getenv('LocalAppData') + LOCK_BGS
+        lock_bgs_path = pathlib.Path(lock_bgs_location)
 
-        # Ensure images already present are not copied
-        b = False
-        for f in alreadyHereLock:
-                split = f.split('.')
-                if (split[0] == bg):
-                        b = True
-                        break
-        if b:
-                subtracted += 1
-                continue
-        
-        # Get the size of the image and if it is below 100kb don't copy it
-        size = os.stat(bgslocation + '\\' + bg).st_size
+        old_bing_bgs_location = os.getenv('LocalAppData') + OLD_BING
+        old_bing_bgs_path = pathlib.Path(old_bing_bgs_location)
 
-        if size < 100000:
-                subtracted += 1
-                continue
+        new_bing_bgs_location = os.getenv('LocalAppData') + NEW_BING
+        new_bing_bgs_path = pathlib.Path(new_bing_bgs_location)
 
-        # Copy image
-        oldname = bgslocation + '\\' + bg
-        newname = location + '\\Lockscreen\\' + bg
-        shutil.copy(oldname, newname)
+        cwd = os.getcwd()
+        now = datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 
-print(f'''Copied {len(bgs) - subtracted} items.''')
+        cwd_lockpath = pathlib.Path(os.path.join(cwd, now, 'Lockscreen'))
+        cwd_old_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_Win10'))
+        cwd_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_Win11'))
 
-files = os.listdir(location + '\\Lockscreen')
+        # Create dirs if not already present
+        cwd_lockpath.mkdir(parents=True, exist_ok=True)
+        cwd_old_deskpath.mkdir(parents=True, exist_ok=True)
+        cwd_deskpath.mkdir(parents=True, exist_ok=True)
 
-print('Files to rename: ')
-print(files)
-print('\n')
+        # Get images already present and the files in the lockscreen directory
+        bgs = os.listdir(lock_bgs_location)
+        already_present_lock = os.listdir(cwd_lockpath.absolute())
 
-i = 0
-for f in files:
-        if (f == 'rename.py'):
-                continue
+        files_copied=0
 
-        # If a .jpg file is already present, do not rename it
-        split = f.split('.')
-        if(split[len(split)-1] == 'jpg'):
-                continue
-        
-        size = os.stat('Lockscreen\\' + f).st_size
-        print(f)
-        print(size)
+        print('Copying new files...\n')
 
-        # Rename files
-        newname = f + '.jpg'
-        oldpath = location + '\\Lockscreen\\' + f
-        newpath = location + '\\Lockscreen\\' + newname
-        os.rename(oldpath, newpath)
-        i+=1
+        # Special case for lock screen files- none of these have file extensions to filter.
+        if lock_bgs_path.exists():
+                for f in lock_bgs_path.iterdir():
+                        if f.stat().st_size < MIN_LOCK_BG_SIZE:
+                                continue
 
-print('\nLock screen operations completed.')
+                        # Skip anything with a file suffix
+                        if ''.join(f.suffixes) != '':
+                                continue
 
-# Get files in the desktop wallpaper directory and already present files
-binglocation = os.getenv('localappdata') + '\\Microsoft\\BingWallpaperApp\\WPImages'
-bingPresent = os.path.isdir(binglocation)
-# Make sure bing desktop is actually present before copying files
-j = 0
-if bingPresent:
-        deskCurrent = os.listdir(location + '\\Desktop')
-        bingfiles = os.listdir(binglocation)
+                        shutil.copy(f.absolute(), os.path.join(cwd_lockpath.absolute(), f.stem + ".jpg" ))
+                        files_copied += 1
 
-        for f in bingfiles:
-                # Don't copy unnecessary and already present files
-                if (f == 'WPPrefs.bin'):
-                        continue
+                print('Lock screen operations completed.')
+        else:
+                print('Lock screen path not present. Skipping.')
 
-                b = False
-                for f2 in deskCurrent:
-                        if(f == f2):
-                                b = True      
-                if b:
-                        continue
+        files_copied += genericCopy(old_bing_bgs_path, cwd_old_deskpath, 'Win10 Bing Wallpaper')
+        files_copied += genericCopy(new_bing_bgs_path, cwd_deskpath, 'Win11 Bing Wallpaper')
 
-                # Copy files
-                oldname = binglocation + '\\' + f
-                newname = location + '\\Desktop\\' + f
-                shutil.copy(oldname, newname)
-                j += 1
-
-
-print(f'''\nAll operations completed. {len(files) + j} files processed, and {i} edited.''')
+        print(f'\nAll operations completed. {files_copied} files processed.')
