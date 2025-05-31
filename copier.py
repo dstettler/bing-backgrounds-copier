@@ -40,8 +40,8 @@ if __name__ == "__main__":
         now = datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
 
         cwd_lockpath = pathlib.Path(os.path.join(cwd, now, 'Lockscreen'))
-        cwd_old_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_Old'))
-        cwd_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_New'))
+        cwd_old_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_Win10'))
+        cwd_deskpath = pathlib.Path(os.path.join(cwd, now, 'Desktop_Win11'))
 
         # Create dirs if not already present
         cwd_lockpath.mkdir(parents=True, exist_ok=True)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         else:
                 print('Lock screen path not present. Skipping.')
 
-        files_copied += genericCopy(old_bing_bgs_path, cwd_old_deskpath, 'Old Bing Wallpaper')
-        files_copied += genericCopy(new_bing_bgs_path, cwd_deskpath, 'New Bing Wallpaper')
+        files_copied += genericCopy(old_bing_bgs_path, cwd_old_deskpath, 'Win10 Bing Wallpaper')
+        files_copied += genericCopy(new_bing_bgs_path, cwd_deskpath, 'Win11 Bing Wallpaper')
 
         print(f'\nAll operations completed. {files_copied} files processed.')
